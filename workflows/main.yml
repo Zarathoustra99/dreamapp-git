@@ -1,0 +1,105 @@
+name: DreamApp CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - '.github/workflows/main.yml'
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build_and_deploy_frontend:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Deploy Frontend
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Build and Deploy Frontend
+        id: builddeployfrontend
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_POLITE_WATER_0FB71A803 }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/" 
+          api_location: "" 
+          output_location: "dist"
+
+  close_pull_request_frontend:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Frontend
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Close Frontend Pull Request
+        id: closepullrequestfrontend
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_POLITE_WATER_0FB71A803 }}
+          action: "close"
+
+  build_and_deploy_backend:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    name: Build and Deploy Backend
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run tests
+        run: |
+          echo "Running tests..."
+          # pytest
+
+      - name: Update startup command
+        run: |
+          mkdir -p .azure
+          echo '{
+            "appCommandLine": "gunicorn --bind=0.0.0.0:8000 --worker-class uvicorn.workers.UvicornWorker asgi:application",
+            "linuxFxVersion": "PYTHON|3.10"
+          }' > .azure/config
+
+          echo '{
+            "extensions": [
+              {
+                "name": "Microsoft.SqlTools"
+              }
+            ]
+          }' > .azure/site-extensions.json
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'dreamapp-auth-api'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
