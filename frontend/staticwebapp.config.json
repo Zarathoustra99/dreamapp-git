@@ -1,0 +1,60 @@
+{
+    "navigationFallback": {
+      "rewrite": "/index.html",
+      "exclude": ["/images/*.{png,jpg,gif}", "/css/*", "/js/*", "/assets/*"]
+    },
+    "routes": [
+      {
+        "route": "/api/register",
+        "allowedRoles": ["anonymous"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "backendUri": "https://dreamapp-auth-api.azurewebsites.net/register"
+      },
+      {
+        "route": "/api/token",
+        "allowedRoles": ["anonymous"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "backendUri": "https://dreamapp-auth-api.azurewebsites.net/token" 
+      },
+      {
+        "route": "/api/refresh",
+        "allowedRoles": ["anonymous"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "backendUri": "https://dreamapp-auth-api.azurewebsites.net/refresh"
+      },
+      {
+        "route": "/api/logout",
+        "allowedRoles": ["anonymous"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "backendUri": "https://dreamapp-auth-api.azurewebsites.net/logout"
+      },
+      {
+        "route": "/api/ping",
+        "allowedRoles": ["anonymous"],
+        "methods": ["GET", "OPTIONS"],
+        "backendUri": "https://dreamapp-auth-api.azurewebsites.net/ping"
+      },
+      {
+        "route": "/api/*",
+        "allowedRoles": ["anonymous", "authenticated"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "backendUri": "https://dreamapp-auth-api.azurewebsites.net/{rest}"
+      },
+      {
+        "route": "/*",
+        "serve": "/index.html",
+        "statusCode": 200
+      }
+    ],
+    "responseOverrides": {
+      "404": {
+        "rewrite": "/index.html",
+        "statusCode": 200
+      }
+    },
+    "globalHeaders": {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-CSRF-Token"
+    }
+}

@@ -1,0 +1,35 @@
+# Node.js frontend (React, Vite, etc.)
+frontend/node_modules/
+frontend/.next/
+frontend/.out/
+frontend/dist/
+frontend/build/
+
+# Backend (Python, FastAPI, etc.)
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+backend/.mypy_cache/
+backend/.pytest_cache/
+
+# Environment files
+*.env
+*.env.local
+*.env.production
+*.env.development
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Azure specific artifacts (if any)
+*.azure/
+
+# Local development only
+.vscode/
+.idea/

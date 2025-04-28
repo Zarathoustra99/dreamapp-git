@@ -1,0 +1,5 @@
+name: dreamapp-auth-api
+runtime: python
+pythonVersion: 3.10
+runtimeVersion: 3.10
+startupCommand: gunicorn application:application --bind=0.0.0.0:8000 --workers=2 --timeout=30 --graceful-timeout=20 --max-requests=1000 --max-requests-jitter=50 --keep-alive=2 --log-level=info

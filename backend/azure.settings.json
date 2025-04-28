@@ -1,0 +1,8 @@
+{
+  "name": "dreamapp-auth-api",
+  "SCM_DO_BUILD_DURING_DEPLOYMENT": "true",
+  "PYTHONPATH": ".",
+  "PYTHON_EXT_PATH": ".",
+  "WEBSITES_PORT": "8000",
+  "WEBSITE_HOSTNAME": "dreamapp-auth-api.azurewebsites.net"
+}
