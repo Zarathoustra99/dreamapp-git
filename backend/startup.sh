@@ -6,9 +6,9 @@ echo "Current directory: $(pwd)"
 echo "Files in root directory: $(ls -la)"
 
 # Make sure we're in the right directory
-if [ -f "$(pwd)/dreamapp-auth/requirements.txt" ]; then
-    echo "Found requirements.txt in dreamapp-auth directory, changing directory"
-    cd dreamapp-auth
+if [ -f "$(pwd)/backend/requirements.txt" ]; then
+    echo "Found requirements.txt in backend directory, changing directory"
+    cd backend 
 elif [ -f "$(pwd)/requirements.txt" ]; then
     echo "Found requirements.txt in current directory"
 else
