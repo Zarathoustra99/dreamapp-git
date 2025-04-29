@@ -129,7 +129,7 @@ jobs:
         run: |
           mkdir -p .azure
           echo '{
-            "appCommandLine": "pip install -r requirements.txt && gunicorn app.main:app --bind=0.0.0.0:8000",
+            "appCommandLine": "python -m pip install --upgrade pip && pip install -r requirements.txt && pip install uvicorn && gunicorn app.main:app --bind=0.0.0.0:8000",
             "linuxFxVersion": "PYTHON|3.10"
           }' > .azure/config
 
@@ -141,21 +141,31 @@ jobs:
             ]
           }' > .azure/site-extensions.json
           
-          # Create a simplified start.sh file
-          echo '#!/bin/bash
-          set -e
+          # Create a bulletproof startup script
+          cat > app_start.sh << 'EOL'
+#!/bin/bash
+set -e
+
+echo "SIMPLE STARTUP SCRIPT v1.0"
+echo "Current directory: $(pwd)"
+echo "Files: $(ls -la)"
+
+# Force installation of requirements
+echo "Installing Python dependencies..."
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install uvicorn gunicorn fastapi
+
+# Log installed packages
+echo "Installed Python packages:"
+pip list
+
+# Simple gunicorn startup without worker class
+echo "Starting gunicorn with basic configuration..."
+gunicorn app.main:app --bind=0.0.0.0:8000
+EOL
           
-          echo "Running deployment start script..."
-          echo "Current directory: $(pwd)"
-          echo "Installing dependencies..."
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          
-          echo "Starting application..."
-          gunicorn app.main:app --bind=0.0.0.0:8000
-          ' > start.sh
-          
-          chmod +x start.sh
+          chmod +x app_start.sh
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2

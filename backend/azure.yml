@@ -2,4 +2,3 @@ name: dreamapp-auth-api
 runtime: python
 pythonVersion: 3.10
 runtimeVersion: 3.10
-startupCommand: chmod +x start.sh && ./start.sh

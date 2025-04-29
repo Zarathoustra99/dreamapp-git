@@ -1,16 +1,21 @@
 #!/bin/bash
 set -e
 
-echo "CUSTOM START SCRIPT RUNNING..."
+echo "=== BULLETPROOF STARTUP SCRIPT v1.0 ==="
 echo "Current directory: $(pwd)"
 echo "Python version: $(python --version)"
 echo "Files: $(ls -la)"
 
-# Install the dependencies
+# Force installation of dependencies
+echo "Installing Python dependencies..."
+python -m pip install --upgrade pip
 pip install -r requirements.txt
+pip install uvicorn gunicorn fastapi
 
-# Show installed packages to verify
-pip list
+# Log installed packages
+echo "Installed packages:"
+pip list | grep -E "uvicorn|fastapi|gunicorn|pydantic"
 
-# Start the app
+# Start with simple gunicorn configuration (no worker class)
+echo "Starting application with basic gunicorn..."
 gunicorn app.main:app --bind=0.0.0.0:8000
