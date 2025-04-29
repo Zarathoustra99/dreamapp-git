@@ -141,17 +141,12 @@ jobs:
             ]
           }' > .azure/site-extensions.json
           
-          # Create a simple script file with proper indentation
-          cat > app_start.sh << EOF
-#!/bin/bash
-set -e
-
-echo "SIMPLE STARTUP SCRIPT v1.0"
-pip install -r requirements.txt
-pip install uvicorn gunicorn fastapi
-gunicorn app.main:app --bind=0.0.0.0:8000
-EOF
-          
+          # Create startup script directly
+          echo "#!/bin/bash" > app_start.sh
+          echo "set -e" >> app_start.sh
+          echo "pip install -r requirements.txt" >> app_start.sh
+          echo "pip install uvicorn gunicorn fastapi" >> app_start.sh
+          echo "gunicorn app.main:app --bind=0.0.0.0:8000" >> app_start.sh
           chmod +x app_start.sh
 
       - name: Deploy to Azure Web App
