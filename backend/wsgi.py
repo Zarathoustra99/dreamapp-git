@@ -1,13 +1,12 @@
 """
 WSGI configuration for Azure App Service.
-This is a standard entry point for many hosting platforms.
 """
 import os
 import sys
 import logging
 
 # Set up logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Log environment info
@@ -20,15 +19,11 @@ sys.path.insert(0, os.getcwd())
 
 # Import the app
 try:
-    from app.main import app as application
+    from app.main import app
     logger.info("Successfully imported FastAPI app from app.main")
 except ImportError as e:
     logger.error(f"Failed to import app.main: {e}")
-    # Try to find where the app module might be
-    for root, dirs, files in os.walk('.', topdown=True):
-        if '__init__.py' in files and 'main.py' in files:
-            logger.info(f"Found potential app module at: {root}")
     raise
 
 # This is required for WSGI servers
-app = application
+application = app
