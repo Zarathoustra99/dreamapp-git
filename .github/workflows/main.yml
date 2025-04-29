@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'frontend/**'
-      - 'backend/**'
-      - '.github/workflows/main.yml'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
@@ -15,8 +11,48 @@ on:
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    name: Detect changes
+    # Skip this job for PR closures
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      workflow: ${{ steps.filter.outputs.workflow }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 50 # Ensure we have enough history for file changes detection
+      
+      - name: Check for file changes
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+            workflow:
+              - '.github/workflows/main.yml'
+
+      - name: Print detected changes
+        run: |
+          echo "Frontend changes: ${{ steps.filter.outputs.frontend }}"
+          echo "Backend changes: ${{ steps.filter.outputs.backend }}"
+          echo "Workflow changes: ${{ steps.filter.outputs.workflow }}"
+
   build_and_deploy_frontend:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    needs: changes
+    # Run if either:
+    # 1. Changes detected in frontend files OR
+    # 2. Workflow file changed OR
+    # 3. Manual workflow dispatch
+    if: >
+      needs.changes.outputs.frontend == 'true' || 
+      needs.changes.outputs.workflow == 'true' || 
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     name: Build and Deploy Frontend
     defaults:
@@ -55,7 +91,15 @@ jobs:
           action: "close"
 
   build_and_deploy_backend:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: changes
+    # Run if either:
+    # 1. Changes detected in backend files OR
+    # 2. Workflow file changed OR
+    # 3. Manual workflow dispatch
+    if: >
+      needs.changes.outputs.backend == 'true' || 
+      needs.changes.outputs.workflow == 'true' || 
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     name: Build and Deploy Backend
     defaults:
@@ -85,7 +129,7 @@ jobs:
         run: |
           mkdir -p .azure
           echo '{
-            "appCommandLine": "gunicorn --bind=0.0.0.0:8000 --worker-class uvicorn.workers.UvicornWorker asgi:application",
+            "appCommandLine": "pip install -r requirements.txt && gunicorn app.main:app --bind=0.0.0.0:8000",
             "linuxFxVersion": "PYTHON|3.10"
           }' > .azure/config
 
@@ -96,6 +140,22 @@ jobs:
               }
             ]
           }' > .azure/site-extensions.json
+          
+          # Create a simplified start.sh file
+          echo '#!/bin/bash
+          set -e
+          
+          echo "Running deployment start script..."
+          echo "Current directory: $(pwd)"
+          echo "Installing dependencies..."
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          
+          echo "Starting application..."
+          gunicorn app.main:app --bind=0.0.0.0:8000
+          ' > start.sh
+          
+          chmod +x start.sh
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
