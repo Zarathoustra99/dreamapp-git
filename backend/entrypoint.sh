@@ -41,9 +41,29 @@ else
     echo "Diagnostic script not found"
 fi
 
+# Check for proper app file
+if [ -f "app/main.py" ]; then
+    echo "Found app/main.py - using app.main:app"
+    APP_MODULE="app.main:app"
+elif [ -f "application.py" ]; then
+    echo "Found application.py - using application:application"
+    APP_MODULE="application:application"
+elif [ -f "../app/main.py" ]; then
+    echo "Found ../app/main.py - using app.main:app with adjusted path"
+    cd ..
+    APP_MODULE="app.main:app"
+else
+    echo "WARNING: Could not find app module files!"
+    find . -name "main.py" | grep -v "__pycache__"
+    # Default to application.py as a fallback
+    APP_MODULE="application:application" 
+fi
+
+echo "Current directory before startup: $(pwd)"
+echo "Files in current directory: $(ls -la)"
+echo "Starting application with gunicorn using module: $APP_MODULE"
+
 # Start application with gunicorn
-echo "Starting application with gunicorn"
-echo "Using application.py instead of app.main"
 exec gunicorn \
   --bind=0.0.0.0:8000 \
   --workers=2 \
@@ -55,4 +75,4 @@ exec gunicorn \
   --access-logfile=- \
   --error-logfile=- \
   --capture-output \
-  application:application
+  $APP_MODULE

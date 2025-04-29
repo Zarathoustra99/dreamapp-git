@@ -2,4 +2,4 @@ name: dreamapp-auth-api
 runtime: python
 pythonVersion: 3.10
 runtimeVersion: 3.10
-startupCommand: sh startup.sh
+startupCommand: bash -c "chmod +x ./entrypoint.sh && ./entrypoint.sh"
