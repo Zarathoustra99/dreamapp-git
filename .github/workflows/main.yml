@@ -119,6 +119,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest
+          # Make sure uvicorn is included in the artifact
+          pip install uvicorn
 
       - name: Run tests
         run: |
@@ -129,7 +131,7 @@ jobs:
         run: |
           mkdir -p .azure
           echo '{
-            "appCommandLine": "python -m pip install --upgrade pip && pip install -r requirements.txt && pip install uvicorn && gunicorn app.main:app --bind=0.0.0.0:8000",
+            "appCommandLine": "gunicorn app.main:app --bind=0.0.0.0:8000",
             "linuxFxVersion": "PYTHON|3.10"
           }' > .azure/config
 
@@ -140,14 +142,6 @@ jobs:
               }
             ]
           }' > .azure/site-extensions.json
-          
-          # Create startup script directly
-          echo "#!/bin/bash" > app_start.sh
-          echo "set -e" >> app_start.sh
-          echo "pip install -r requirements.txt" >> app_start.sh
-          echo "pip install uvicorn gunicorn fastapi" >> app_start.sh
-          echo "gunicorn app.main:app --bind=0.0.0.0:8000" >> app_start.sh
-          chmod +x app_start.sh
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
