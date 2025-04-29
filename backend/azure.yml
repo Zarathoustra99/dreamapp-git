@@ -2,4 +2,3 @@ name: dreamapp-auth-api
 runtime: python
 pythonVersion: 3.10
 runtimeVersion: 3.10
-startupCommand: gunicorn --bind=0.0.0.0:8000 --worker-class uvicorn.workers.UvicornWorker asgi:application
